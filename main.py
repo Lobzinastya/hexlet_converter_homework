@@ -11,6 +11,11 @@ from online import get_currencies
 #TODO– добавить возможность использования нецелых чисел
 #TODO– реализовать подгрузку курсов валют по API
 
+#online_response = get_currencies()['data'] : исправлено
+#Небезопасное обращение к ключу data. Стоит делать через get с переданным стандартным значением, чтобы исключить поломку проекта
+#amount = float(input("Введите количество валюты: "))
+#Если введу слово, например, "Привет", то сломаю программу :(
+
 
 def convert(amount, from_ticker, to_ticker, currencies):
     from_currency = currencies.get(from_ticker)
@@ -23,12 +28,25 @@ def input_currency(input_message, currencies):
     ticker = input(f"{input_message}: ").strip().upper() #upper() для "борьбы" с неправильным регистром
     currency = currencies.get(ticker, None)
     if currency is None:
-        print(f'Валюта {ticker} не найдена, пожалуйста, повторите ввод')
+        print(f'Валюта {ticker} не найдена. Пожалуйста, повторите ввод')
         return input_currency(input_message, currencies)
     return ticker
 
+
+def input_amount(input_message):
+    try:
+        amount = input(f"{input_message}: ")
+        num = float(amount)
+        return num
+    except ValueError:
+        print(f'Ошибка ввода количества валюты "{amount}". Пожалуйста, введите число')
+    return input_amount(input_message)
+
 #current_currencies = {'RUB': 97.4545572753, 'EUR': 0.9487101161, 'USD': 1,}
-online_response = get_currencies()['data']
+online_response = get_currencies().get('data', None)
+if online_response is None:
+    print("Ошибка подгрузки курсов валют!")
+    exit()
 
 print("Привет, это программа Конвертер Валют!")
 
@@ -43,7 +61,7 @@ print(*online_response)
 
 from_ticker = input_currency("Введите исходную валюту", online_response)
 to_ticker = input_currency("Введите в какую валюту следует перевести", online_response)
-amount = float(input("Введите количество валюты: "))
+amount = input_amount("Введите количество валюты: ")
 
 print(f"Подгружены курсы: \n1 {from_ticker} = {online_response[from_ticker]} USD "
       f"\n1 {to_ticker} = {online_response[to_ticker]} USD\n")
